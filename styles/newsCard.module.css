@@ -1,0 +1,20 @@
+.eachNews{
+    cursor: context-menu;
+}
+
+.eachNews:hover{
+    border: 2.5px solid navy;
+    transform: scale(1.10);
+    transition: 0.3s linear;
+    z-index: 2;
+    border-radius: 1rem;
+}
+.eachNews::after{
+    transition: all 0.5s linear;
+}
+
+@media screen and (max-width: 768px) {
+    .eachNews:hover{
+        transform: scale(1.05);
+    }
+}

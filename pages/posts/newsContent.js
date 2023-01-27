@@ -7,75 +7,34 @@ import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
 import { host } from "../../Components/URI";
 import { likePost } from "../../Components/like";
+import useSWR from "swr"
 
-import {FaFacebook, FaRegThumbsUp, FaThumbsUp, FaTwitter, FaWhatsapp} from "react-icons/fa"
+import {FaFacebook, FaRegThumbsUp, FaTrash, FaTrashAlt, FaTwitter, FaWhatsapp} from "react-icons/fa"
+import Loader from "react-spinners/HashLoader";
 
-function NewsFeed({data}) {
+function NewsContent({postDetail}) {
+    const [commentText, setcommentText] = useState("")
 
-  const params = useRouter();
-  let likeOption = false;
-  const [likeStatus, setlikeStatus] = useState(false)
-
-  console.log(data)
-  useEffect(() => {
-    if (localStorage.alreadyLiked) {
-      likeOption = sessionStorage.getItem("alreadyLiked");
+    const sendComment=()=>{
+        let detail = {ref: postDetail[0].ref, text: commentText}
+       
+        axios.post(`${host}/comments`, detail)
     }
-    setlikeStatus(()=>likeOption)
-  }, [likeOption]);
-  // injection of packages
 
-  // useStates
-  const [commentText, setcommentText] = useState("");
-
-  //variables
-  const toastOption = {
-    position: "top-center",
-    theme: "colored",
-  };
-
-  const num = 8;
-
-  const sendComment = () => {
-    var detail = {
-      text: commentText,
-      timeStamp: new Date(),
-      postId: params.query.newsFeed,
-    };
-    comment(detail)
-      .then((res) => {
-        console.log(res);
-        if (res.statusText === "Created") {
-          toast.success(`Comment added successfully`, toastOption);
-          setcommentText("");
-        } else {
-          toast.error(`please check your internet`, toastOption);
-        }
-      })
-      .catch((err) => {
-        toast.error(`${err.messaege}`, toastOption);
-      });
-  };
-
-  const like = () => {
-    likeOption = !likeOption;
-    setlikeStatus(()=>!likeOption)
-    sessionStorage.setItem("alreadyLiked", !likeOption);
-    const detail = {  postId: params.query.newsFeed, likeOption: !likeOption };
-      likePost(detail).then((res) => {
-        console.log(res);
-      });
-  };
-
+    const {commentData, commentError, commentLoading} = useSWR(`${host}/comments?ref=${postDetail[0].ref}`).mutate()
   return (
-    <>
-      <div className={`container-fluid ${styles.body}`}>
+   <>
+    <div className={`container-fluid ${styles.body}`}>
         <div className="col-lg-11 mx-auto">
-          <form></form>
+            {
+                postDetail?
+
           <section className="row">
-            <aside className="col-md-8">
+            {
+                postDetail.map((post, i)=>{
+                    return <aside className="col-md-8">
               <div className="p-2">
-                <h3 data-toggle="tool-tip" title="News title">Messi: Is the real goat</h3>
+                <h3 data-toggle="tool-tip" title="News title">{post.desc}</h3>
                 <div className="">
                   <Image
                     src={require("../../assets/2.jpg")}
@@ -109,7 +68,7 @@ function NewsFeed({data}) {
                   <aside
                     className={`icon rounded-pill border p-2 d-flex align-items-center gap-3`}
                     style={{ cursor: "pointer" }}
-                    onClick={like}
+                    
                   >
                   <FaRegThumbsUp size={`3vh`}/><span>0</span>
                   </aside>
@@ -119,6 +78,8 @@ function NewsFeed({data}) {
                 </section>
               </div>
             </aside>
+                })
+            }
             <aside className={`col-lg-4 col-md-12 mt-5 ${styles.relatedSection}`}>
               <div>
                 <h6>Comment</h6>
@@ -131,19 +92,25 @@ function NewsFeed({data}) {
                         overflow: "auto",
                       }}
                     >
-                      {Array(num)
+                      {Array(9)
                         .fill("Comment")
                         .map((item, id) => {
                           return (
                             <div
-                              className="rounded-3 bg-danger border p-2 my-1"
+                              className="rounded-3 bg-success border p-2 my-1"
                               key={id}
                             >
                               <section className="text-light">
-                                Yes messi is real
+                                <p className="my-aut">
+                                Yes messi is real ecbiuwtrniwut
+                                </p>
+                                <span>time</span>
                               </section>
                               <section className="text-end text-light">
-                                time
+                                <span>
+                                    <FaTrash size={'2.5vh'} className="text-danger"/>
+                                </span>
+                               
                               </section>
                             </div>
                           );
@@ -162,7 +129,7 @@ function NewsFeed({data}) {
                         className={`rounded-3 btn btn-primary col-12 ${
                           !!!commentText && "disabled"
                         }`}
-                        onClick={sendComment}
+                        onClick={()=>sendComment()}
                       >
                         Comment
                       </button>
@@ -172,7 +139,7 @@ function NewsFeed({data}) {
                 <div className="mt-3">
                   <h3>Related News</h3>
                   <div>
-                    {Array(num)
+                    {Array(9)
                       .fill("Related New")
                       .map((item, index) => (
                         <div key={index}>
@@ -191,23 +158,28 @@ function NewsFeed({data}) {
                 </div>
               </div>
             </aside>
-          </section>
+          </section>: 
+
+          <Loader cssOverride={{margin: "3vh auto"}}/>
+            }
         </div>
       </div>
       <ToastContainer />
-    </>
-  );
+   </>
+  )
 }
 
-export default NewsFeed;
+export default NewsContent
 
-export async function getServerSideProps(context){
-  let res = await axios.get(`${host}/posts/${context.query.newsFeed}`)
-  let data = await res
-  // console.log(context)
-  return {
-    props: {
-      data: data.data
+export const getServerSideProps= async(context)=>{
+
+    // const gg = context.desc.replace(/ /g, "%20")
+    let res = await axios.get(`${host}/posts?desc=${context.query.desc}`)
+let data = await res.data
+
+    return {
+        props: {
+            postDetail : data
+        }
     }
-  }
 }
