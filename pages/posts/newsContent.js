@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/Image";
 import styles from "../../styles/newsFeed.module.css";
 import { comment } from "../../Components/Comment";
@@ -8,31 +8,57 @@ import axios from "axios";
 import { host } from "../../Components/URI";
 import { likePost } from "../../Components/like";
 import useSWR from "swr"
+import ReactReadMoreReadLess from "react-read-more-read-less";
 
+import Loader from "react-spinners/HashLoader"
 import {FaFacebook, FaRegThumbsUp, FaTrash, FaTrashAlt, FaTwitter, FaWhatsapp} from "react-icons/fa"
-import Loader from "react-spinners/HashLoader";
-
+import { deleteComment } from "../../Components/delete";
+import { related } from "../../Components/relatedPost";
+import ScrollToBottom from 'react-scroll-to-bottom';
 function NewsContent({postDetail}) {
+
+  const scrollRef = useRef()
     const [commentText, setcommentText] = useState("")
+  
+  const {data , error, isLoading} = useSWR(`${host}/comments?ref=${postDetail[0].ref}`, {refreshInterval: 1000})
+
+    let relatedNews = related(postDetail?.[0].category)
 
     const sendComment=()=>{
         let detail = {ref: postDetail[0].ref, text: commentText}
-       
-        axios.post(`${host}/comments`, detail)
+        comment(detail).then((res)=>{
+          if(res.statusText=="Created"){
+              setcommentText("")
+          }
+          else{
+            window.alert(res.data.message)
+          }
+        }).catch((err)=>{
+            window.alert(err.message)
+        })
     }
 
-    const {commentData, commentError, commentLoading} = useSWR(`${host}/comments?ref=${postDetail[0].ref}`).mutate()
+    const deleteCommentFunc=(pp)=>{
+      console.log(pp)
+      // deleteComment()
+    }
+
+
+    useEffect(()=>{
+        scrollRef.current?.scrollIntoView({behaviour: "smooth"})
+    }, [data])
   return (
    <>
     <div className={`container-fluid ${styles.body}`}>
         <div className="col-lg-11 mx-auto">
             {
+
                 postDetail?
 
           <section className="row">
             {
-                postDetail.map((post, i)=>{
-                    return <aside className="col-md-8">
+                              postDetail.map((post, i)=>{
+                    return <aside className="col-md-8" key={i}>
               <div className="p-2">
                 <h3 data-toggle="tool-tip" title="News title">{post.desc}</h3>
                 <div className="">
@@ -43,24 +69,32 @@ function NewsContent({postDetail}) {
                   />
                 </div>
                 <div className="p-2" style={{ textAlign: "justify", lineHeight: "2rem" }}>
-                  This is a wider card with supporting text below as a natural
-                  lead-in to additional content. This content is a little bit
-                  longer.This is a wider card with supporting text below as a
-                  natural lead-in to additional content. This content is a
-                  little bit longer.This is a wider card with supporting text
-                  below as a natural lead-in to additional content. This content
-                  is a little bit longer.This is a wider card with supporting
-                  text below as a natural lead-in to additional content. This
-                  content is a little bit longer.
-                  This is a wider card with supporting text below as a natural
-                  lead-in to additional content. This content is a little bit
-                  longer.This is a wider card with supporting text below as a
-                  natural lead-in to additional content. This content is a
-                  little bit longer.This is a wider card with supporting text
-                  below as a natural lead-in to additional content. This content
-                  is a little bit longer.This is a wider card with supporting
-                  text below as a natural lead-in to additional content. This
-                  content is a little bit longer.
+                  <ReactReadMoreReadLess
+                charLimit={200}
+                readMoreText={"Read more ▼"}
+                readLessText={`Hide ▲`}
+                
+                >
+              This is a wider card with supporting text below as a natural
+              lead-in to additional content. This content is a little bit
+              longer.This is a wider card with supporting text below as a
+              natural lead-in to additional content. This content is a
+              little bit longer.This is a wider card with supporting text
+              below as a natural lead-in to additional content. This content
+              is a little bit longer.This is a wider card with supporting
+              text below as a natural lead-in to additional content. This
+              content is a little bit longer.
+              This is a wider card with supporting text below as a natural
+              lead-in to additional content. This content is a little bit
+              longer.This is a wider card with supporting text below as a
+              natural lead-in to additional content. This content is a
+              little bit longer.This is a wider card with supporting text
+              below as a natural lead-in to additional content. This content
+              is a little bit longer.This is a wider card with supporting
+              text below as a natural lead-in to additional content. This
+              content is a little bit longer.
+                {/* {post.body} */}
+            </ReactReadMoreReadLess>
                 </div>
                 <section
                   className={`rounded-4 d-flex gap-3 float-end ${styles.icon_container}`}
@@ -92,22 +126,23 @@ function NewsContent({postDetail}) {
                         overflow: "auto",
                       }}
                     >
-                      {Array(9)
-                        .fill("Comment")
-                        .map((item, id) => {
+
+                      {data?.
+                        map((item, id) => {
                           return (
                             <div
                               className="rounded-3 bg-success border p-2 my-1"
                               key={id}
+                              ref={scrollRef}
                             >
                               <section className="text-light">
                                 <p className="my-aut">
-                                Yes messi is real ecbiuwtrniwut
+                                {item.text}
                                 </p>
-                                <span>time</span>
+                                {/* <span>time</span> */}
                               </section>
                               <section className="text-end text-light">
-                                <span>
+                                <span onClick={()=>deleteComment(item.id)}>
                                     <FaTrash size={'2.5vh'} className="text-danger"/>
                                 </span>
                                
@@ -139,9 +174,8 @@ function NewsContent({postDetail}) {
                 <div className="mt-3">
                   <h3>Related News</h3>
                   <div>
-                    {Array(9)
-                      .fill("Related New")
-                      .map((item, index) => (
+                    {relatedNews.data?.
+                      map((item, index) => (
                         <div key={index}>
                           <section className="d-flex border-bottom my-2 ">
                             <Image
@@ -173,9 +207,8 @@ export default NewsContent
 
 export const getServerSideProps= async(context)=>{
 
-    // const gg = context.desc.replace(/ /g, "%20")
     let res = await axios.get(`${host}/posts?desc=${context.query.desc}`)
-let data = await res.data
+    let data = await res.data
 
     return {
         props: {

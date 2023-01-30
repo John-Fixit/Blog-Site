@@ -2,6 +2,8 @@ import Link from 'next/link'
 import Image from 'next/Image'
 import styles from "../styles/newsCard.module.css"
 import Loader from 'react-spinners/ClockLoader'
+import TimeAgo from 'timeago-react'
+import ReactReadMoreReadLess from "react-read-more-read-less";
 
 function LatestNews({data}) {
 
@@ -16,7 +18,7 @@ function LatestNews({data}) {
         <hr />
         <div className='row mx-lg-3'>
             {
-                data?.reverse().slice(0, 4).map((post, i)=>{
+                data?.map((post, i)=>{
                     return <div className="col-lg-3 col-md-6 my-3" key={i}>
                 <div className={`card h-100 p-1 ${styles.eachNews}`}>
                   <Image
@@ -30,7 +32,13 @@ function LatestNews({data}) {
                   <div className="card-body">
                     <h5 className="card-title">{post.desc.slice(0, 50)}</h5>
                     <p className="card-text">
-                     {post.body.slice(0, 400)}
+                    <ReactReadMoreReadLess
+                charLimit={200}
+                readMoreText={""}
+                readLessText={""}
+            >
+                                   {post.body}
+            </ReactReadMoreReadLess>
                     </p>
                   </div>
                   <div className="card-foot d-flex justify-content-between">
@@ -41,7 +49,12 @@ function LatestNews({data}) {
                     >
                       Read More
                     </Link>
-                    <p className="my-auto">{post.createdAt}</p>
+                    <p className="my-auto">
+                    <TimeAgo
+                      datetime={post.createdAt}
+
+                      />
+                    </p>
 
                   </div>
                 </div>
