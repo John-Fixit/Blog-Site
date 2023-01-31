@@ -9,10 +9,9 @@ import { host } from "../../Components/URI";
 import { likePost } from "../../Components/like";
 import useSWR from "swr"
 import ReactReadMoreReadLess from "react-read-more-read-less";
-
+import TimeAgo from "timeago-react";
 import Loader from "react-spinners/HashLoader"
 import {FaFacebook, FaRegThumbsUp, FaTrash, FaTrashAlt, FaTwitter, FaWhatsapp} from "react-icons/fa"
-import { deleteComment } from "../../Components/delete";
 import { related } from "../../Components/relatedPost";
 import ScrollToBottom from 'react-scroll-to-bottom';
 function NewsContent({postDetail}) {
@@ -25,7 +24,7 @@ function NewsContent({postDetail}) {
     let relatedNews = related(postDetail?.[0].category)
 
     const sendComment=()=>{
-        let detail = {ref: postDetail[0].ref, text: commentText}
+        let detail = {ref: postDetail[0].ref, text: commentText, createAt: new Date().toLocaleString()}
         comment(detail).then((res)=>{
           if(res.statusText=="Created"){
               setcommentText("")
@@ -139,14 +138,13 @@ function NewsContent({postDetail}) {
                                 <p className="my-aut">
                                 {item.text}
                                 </p>
-                                {/* <span>time</span> */}
-                              </section>
-                              <section className="text-end text-light">
-                                <span onClick={()=>deleteComment(item.id)}>
-                                    <FaTrash size={'2.5vh'} className="text-danger"/>
+                                <div className="text-end">
+                                <span className="me-auto">
+                              <TimeAgo datetime={item.createAt}/>
                                 </span>
-                               
+                                </div>
                               </section>
+                              
                             </div>
                           );
                         })}
@@ -176,7 +174,7 @@ function NewsContent({postDetail}) {
                   <div>
                     {relatedNews.data?.
                       map((item, index) => (
-                        <div key={index}>
+                        <div key={index} style={{cursor: 'pointer'}} >
                           <section className="d-flex border-bottom my-2 ">
                             <Image
                               src={require("../../assets/1.jpg")}
@@ -197,7 +195,7 @@ function NewsContent({postDetail}) {
           <Loader cssOverride={{margin: "3vh auto"}}/>
             }
         </div>
-      </div>
+      </div>    
       <ToastContainer />
    </>
   )
