@@ -15,4 +15,11 @@ option:hover{
 *::-webkit-scrollbar-thumb{
     background-color: navy;
 }
+.relatedNews :hover{
+    background-color: navy;
+    border-radius: 2vh;
+    transition: all 0.5s ease;
+    box-shadow: inset 5 -5 5 20;
+    color: white;
+}
 

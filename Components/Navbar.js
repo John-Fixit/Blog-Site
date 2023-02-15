@@ -1,8 +1,11 @@
 import React from "react";
 import Link from "next/link";
 import styles from "../styles/navbar.module.css";
+import Category from "./Category";
 function Navbar() {
+  
   return (
+    <>
     <nav className="navbar navbar-expand-lg navbar-primary shadow-sm fixed-to bg-primay bg-light px-lg-5">
       <div className="container-fluid">
         <Link className="navbar-brand" href="/">
@@ -21,17 +24,17 @@ function Navbar() {
         </button>
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav ms-auto gap-5 mb-2 mb-lg-0">
-            <li className="nav-item">
+            <li className="nav-item gap-4">
               <Link className="nav-link" aria-current="page" href="/">
                 Home
               </Link>
             </li>
-            <li className="nav-item active">
+            <li className="nav-item gap-4">
               <Link className="nav-link" aria-current="page" href="/newsPost">
                 New Post
               </Link>
             </li>
-            <li className={`nav-item dropdown ${styles.dropdownToggle}`} >
+            <li className={`nav-item dropdown gap-4 ${styles.dropdownToggle}`} >
               <a
                 className="nav-link"
                 href="#"
@@ -78,6 +81,8 @@ function Navbar() {
         </div>
       </div>
     </nav>
+    {/* <Category /> */}
+    </>
   );
 }
 

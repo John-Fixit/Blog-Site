@@ -52,7 +52,6 @@ function LatestNews({data}) {
                     <p className="my-auto">
                     <TimeAgo
                       datetime={post.createdAt}
-
                       />
                     </p>
 
